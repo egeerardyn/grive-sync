@@ -12,9 +12,6 @@
 # Feel free to do whatever you want with it.
 ###############################################################################
 
-# Change this to 1 once you've changed the variables
-I_HAVE_EDITED=0
-
 # This needs to best set for notify-send if calling from cron
 DISPLAY=:0.0
 
@@ -24,7 +21,7 @@ GRIVE_DIRS="$1"
 
 # Path to an icon for notify-osd
 #NOTIFY_ICON="/home/josh/.icons/google-drive.png"
-SCRIPT_PATH="`dirname \"$0\"`"
+SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 NOTIFY_BIN=$(which notify-send)
 NOTIFY_ICON="$SCRIPT_PATH/icons/grive.png"
 
@@ -33,7 +30,7 @@ GRIVE_BIN=$(which grive)
 ###############################################################################
 # You don't need to edit below here unless you really want to
 ###############################################################################
-[ "$I_HAVE_EDITED" -eq "0" ] && printf "You need to configure $0\n" && exit 1
+[ -z "$GRIVE_DIRS" ] && printf "Syntax: grive-sync.sh \"':' SEPARATED LIST OF FOLDERS TO SYNCHRONIZE\"\n" && exit 1
 
 ps_bin=$(which ps)
 rm_bin=$(which rm)
@@ -57,11 +54,11 @@ if ! type grive >/dev/null 2>&1; then
 	exit 1
 fi
 
-grive_dirs_arr=(`echo $str | cut -d ":"  --output-delimiter=" " -f 1-`)
+IFS=':' read -ra  grive_dirs_arr <<< "$GRIVE_DIRS"
 
 for key in "${!grive_dirs_arr[@]}"; do
 
-GRIVE_DIR="${ary[$key]}"
+GRIVE_DIR="${grive_dirs_arr[$key]}"
 
 # GRIVE_DIR doesn't exist
 [ ! -d "${GRIVE_DIR}" ] && printf "${GRIVE_DIR} does not exist.\n" && exit 1
@@ -85,14 +82,14 @@ if ! $ps_bin aux|$grep_bin -q -e '[g]rive '; then
 	_downloads=$($grep_bin -c "${DOWNLOAD_MSG}" "${TMPLOG}")
 
 	# Setup the notify-osd message
-	notify=""
+	notify="Finished synchronizing $GRIVE_DIR\n"
 	if [ $_ldeletions -gt 0 ]; then
 		# If it's only one file, show the filename
 		if [ $_ldeletions -eq 1 ]; then
 			_filename=$(get_filename "${REMOVEL_MSG}")
-			notify="$_filename removed from local"
+			notify="${notify}$_filename removed from local"
 		else
-			notify="${_ldeletions} removed from local"
+			notify="${notify}${_ldeletions} removed from local"
 		fi
 	fi
 
@@ -100,9 +97,9 @@ if ! $ps_bin aux|$grep_bin -q -e '[g]rive '; then
 		[ ! -z "$notify" ] && notify="${notify}\n"
 		if [ $_rdeletions -eq 1 ]; then
 			_filename=$(get_filename "${REMOVER_MSG}")
-			notify="$_filename removed from remote"
+			notify="${notify}$_filename removed from remote"
 		else
-			notify="${_rdeletions} removed from remote"
+			notify="${notify}${_rdeletions} removed from remote"
 		fi
 	fi
 
