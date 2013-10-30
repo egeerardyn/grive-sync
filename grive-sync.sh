@@ -19,12 +19,14 @@ I_HAVE_EDITED=0
 DISPLAY=:0.0
 
 # Path to directory of your Google Drives, separate multiple drives by ":"
-GRIVE_DIRS="/home/myself/Grive/user@domain.com:/home/myself/Grive/user2@domain2.com"
+#GRIVE_DIRS="/home/myself/Grive/user@domain.com:/home/myself/Grive/user2@domain2.com"
+GRIVE_DIRS="$1"
 
 # Path to an icon for notify-osd
 #NOTIFY_ICON="/home/josh/.icons/google-drive.png"
+SCRIPT_PATH="`dirname \"$0\"`"
 NOTIFY_BIN=$(which notify-send)
-NOTIFY_ICON="/home/myself/.icons/grive.png"
+NOTIFY_ICON="$SCRIPT_PATH/icons/grive.png"
 
 GRIVE_BIN=$(which grive)
 
