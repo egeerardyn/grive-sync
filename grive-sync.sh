@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ###############################################################################
 # grive-sync
 # This script runs grive and greps the log output to create a
@@ -18,8 +18,8 @@ I_HAVE_EDITED=0
 # This needs to best set for notify-send if calling from cron
 DISPLAY=:0.0
 
-# Path to directory of your Google Drive
-GRIVE_DIR="/home/myself/Grive"
+# Path to directory of your Google Drives, separate multiple drives by ":"
+GRIVE_DIRS="/home/myself/Grive/user@domain.com:/home/myself/Grive/user2@domain2.com"
 
 # Path to an icon for notify-osd
 #NOTIFY_ICON="/home/josh/.icons/google-drive.png"
@@ -54,6 +54,12 @@ if ! type grive >/dev/null 2>&1; then
 	printf "Can't locate grive\n"
 	exit 1
 fi
+
+grive_dirs_arr=(`echo $str | cut -d ":"  --output-delimiter=" " -f 1-`)
+
+for key in "${!grive_dirs_arr[@]}"; do
+
+GRIVE_DIR="${ary[$key]}"
 
 # GRIVE_DIR doesn't exist
 [ ! -d "${GRIVE_DIR}" ] && printf "${GRIVE_DIR} does not exist.\n" && exit 1
@@ -126,3 +132,5 @@ if ! $ps_bin aux|$grep_bin -q -e '[g]rive '; then
 	# Remove the grive ouput log	
 	$rm_bin -f "${TMPLOG}"
 fi
+
+done
